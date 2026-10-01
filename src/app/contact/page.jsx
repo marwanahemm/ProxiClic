@@ -21,11 +21,11 @@ export default function Contact() {
         <div className="card-item" style={{ padding: 20 }}>
           <div className="card-item-header" style={{ fontSize: 14, color: 'var(--navy-bg)', marginBottom: 12 }}>📞 Coordonnées Directes</div>
           <p style={{ marginBottom: 12 }}>
-            <strong>Téléphone :</strong><br />
+            <strong>Téléphone : 07.81.05.14.72</strong><br />
             <a href={TELEPHONE_HREF} style={{ ...lien, fontSize: 14 }}>{TELEPHONE}</a>
           </p>
           <p style={{ marginBottom: 12 }}>
-            <strong>Adresse E-mail :</strong><br />
+            <strong>Adresse E-mail : marwan.ahemmane@gmail.com</strong><br />
             <a href={`mailto:${EMAIL}`} style={lien}>{EMAIL}</a>
           </p>
           <p style={{ marginBottom: 12 }}>
