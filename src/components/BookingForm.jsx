@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { SectionTitle } from './PageHead';
+import RgpdNote from './RgpdNote';
 import { CRENEAUX, COMMUNES, PRESTATIONS } from '../lib/pricing';
 
 const JOURS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
@@ -66,7 +67,7 @@ export default function BookingForm() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.status === 201) {
-        setEtat({ type: 'ok', texte: 'Votre demande est bien enregistrée. Je vous rappelle rapidement pour confirmer le rendez-vous.' });
+        setEtat({ type: 'ok', texte: data.demo ? "Mode démonstration : le formulaire fonctionne, mais votre demande n'a pas été enregistrée." : 'Votre demande est bien enregistrée. Je vous rappelle rapidement pour confirmer le rendez-vous.' });
         form.reset();
         setCreneau('');
         chargerCreneauxPris(jour);
@@ -173,6 +174,8 @@ export default function BookingForm() {
             <label className="form-label" htmlFor="details">Précisez le besoin ou l&apos;adresse précise</label>
             <textarea id="details" name="details" rows={3} maxLength={1000} className="form-textarea" placeholder="Ex: Résidence les Lilas à Boé. Besoin d'aide pour une déclaration en ligne et l'installation d'une imprimante WiFi." />
           </div>
+
+          <RgpdNote />
 
           {etat.type === 'ok' && <div className="callout-box" role="status"><p>✅ {etat.texte}</p></div>}
           {etat.type === 'erreur' && <div className="senior-help-bar" role="alert"><div className="senior-help-bar-text">⚠️ {etat.texte}</div></div>}

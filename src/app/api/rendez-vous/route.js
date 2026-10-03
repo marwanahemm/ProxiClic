@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getSupabase } from '../../../lib/supabase';
 import { CRENEAUX, COMMUNES, PRESTATIONS } from '../../../lib/pricing';
+import { notifier } from '../../../lib/notify';
+import { MODE_DEMO } from '../../../lib/site';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +23,7 @@ function jourOuvreFutur(iso) {
 export async function GET(request) {
   const date = new URL(request.url).searchParams.get('date') || '';
   if (!ISO.test(date)) return NextResponse.json({ erreur: 'Date invalide.' }, { status: 400 });
+  if (MODE_DEMO) return NextResponse.json({ pris: [] });
   try {
     const { data, error } = await getSupabase()
       .from('rendez_vous').select('creneau').eq('date_rdv', date).neq('statut', 'annule');
@@ -51,6 +54,8 @@ export async function POST(request) {
   if (!jourOuvreFutur(b.date)) return NextResponse.json({ erreur: 'Choisissez un jour ouvré à partir de demain.' }, { status: 400 });
   if (details.length > 1000) return NextResponse.json({ erreur: 'Message trop long.' }, { status: 400 });
 
+  if (MODE_DEMO) return NextResponse.json({ ok: true, demo: true }, { status: 201 }); // validé, mais rien n'est enregistré
+
   try {
     const { error } = await getSupabase().from('rendez_vous').insert({
       date_rdv: b.date, creneau: b.creneau, nom, telephone,
@@ -60,6 +65,25 @@ export async function POST(request) {
       if (error.code === '23505') return NextResponse.json({ erreur: 'Créneau déjà réservé.' }, { status: 409 });
       throw error;
     }
+    const dateLongue = new Date(b.date + 'T12:00:00Z').toLocaleDateString('fr-FR', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
+    });
+    await notifier({
+      sujet: `Nouveau RDV : ${nom} — ${dateLongue}, ${b.creneau}`,
+      lignes: [
+        'Nouvelle demande de rendez-vous',
+        '',
+        `Date : ${dateLongue}`,
+        `Créneau : ${b.creneau}`,
+        `Nom : ${nom}`,
+        `Téléphone : ${telephone}`,
+        `Commune : ${b.commune}`,
+        `Prestation : ${b.prestation}`,
+        `Précisions : ${details || '—'}`,
+        '',
+        'À confirmer ou annuler dans Supabase (table rendez_vous, colonne statut).',
+      ],
+    });
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (e) {
     console.error('POST rendez-vous', e);
