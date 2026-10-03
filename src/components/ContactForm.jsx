@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import RgpdNote from './RgpdNote';
 
 export default function ContactForm() {
   const [envoi, setEnvoi] = useState(false);
@@ -18,7 +19,7 @@ export default function ContactForm() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.status === 201) {
-        setEtat({ type: 'ok', texte: 'Message envoyé. Je vous réponds sous 24h.' });
+        setEtat({ type: 'ok', texte: data.demo ? "Mode démonstration : le formulaire fonctionne, mais votre message n'a pas été enregistré." : 'Message envoyé. Je vous réponds sous 24h.' });
         form.reset();
       } else {
         setEtat({ type: 'erreur', texte: data.erreur || "Une erreur est survenue. Merci de réessayer ou de m'appeler." });
@@ -45,6 +46,8 @@ export default function ContactForm() {
         <label className="form-label" htmlFor="c-message">Votre Message</label>
         <textarea id="c-message" name="message" rows={4} className="form-textarea" placeholder="Expliquez brièvement votre demande..." required minLength={5} maxLength={2000} />
       </div>
+
+      <RgpdNote />
 
       {etat.type === 'ok' && <div className="callout-box" role="status"><p>✅ {etat.texte}</p></div>}
       {etat.type === 'erreur' && <div className="senior-help-bar" role="alert"><div className="senior-help-bar-text">⚠️ {etat.texte}</div></div>}
