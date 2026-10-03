@@ -1,7 +1,10 @@
 import './globals.css';
+import Link from 'next/link';
 import ModeSwitch from '../components/ModeSwitch';
+import { MODE_DEMO } from '../lib/site';
 
 export const metadata = {
+  ...(MODE_DEMO ? { robots: { index: false, follow: false } } : {}),
   title: 'Assistance Administrative & Informatique à domicile — Agen',
   description:
     "Assistance administrative et informatique à domicile sur le Bassin d'Agen. Accompagnement patient, 50 % de crédit d'impôt.",
@@ -18,6 +21,15 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <main className="container">
+          {MODE_DEMO && (
+            <div className="senior-help-bar" role="note">
+              <div className="senior-help-bar-icon" aria-hidden="true">🚧</div>
+              <div className="senior-help-bar-text">
+                Site en construction — version de démonstration. Les services et tarifs affichés ne sont pas encore proposés,
+                et aucune demande n&apos;est enregistrée.
+              </div>
+            </div>
+          )}
           <ModeSwitch />
           {children}
         </main>
@@ -26,6 +38,9 @@ export default function RootLayout({ children }) {
             <p>Services à la Personne (SAP) • Micro-entreprise d&apos;Assistance Administrative &amp; Informatique à Domicile • Bassin d&apos;Agen</p>
             <p style={{ marginTop: 6, fontSize: 12, color: '#94a3b8' }}>
               Site conçu pour une accessibilité maximale et une lecture confortable pour les seniors.
+            </p>
+            <p style={{ marginTop: 6 }}>
+              <Link href="/mentions-legales" style={{ color: 'inherit', textDecoration: 'underline' }}>Mentions légales &amp; confidentialité</Link>
             </p>
           </div>
         </footer>

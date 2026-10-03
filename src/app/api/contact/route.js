@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabase } from '../../../lib/supabase';
+import { notifier } from '../../../lib/notify';
+import { MODE_DEMO } from '../../../lib/site';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,9 +20,16 @@ export async function POST(request) {
   if (contact.length < 5 || contact.length > 150) return NextResponse.json({ erreur: 'Téléphone ou e-mail invalide.' }, { status: 400 });
   if (message.length < 5 || message.length > 2000) return NextResponse.json({ erreur: 'Message trop court ou trop long.' }, { status: 400 });
 
+  if (MODE_DEMO) return NextResponse.json({ ok: true, demo: true }, { status: 201 }); // validé, mais rien n'est enregistré
+
   try {
     const { error } = await getSupabase().from('messages_contact').insert({ nom, contact, message });
     if (error) throw error;
+    await notifier({
+      sujet: `Nouveau message : ${nom}`,
+      lignes: ['Nouveau message via le formulaire de contact', '', `Nom : ${nom}`, `Contact : ${contact}`, '', message],
+      replyTo: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact) ? contact : undefined, // « Répondre » fonctionne si c'est un e-mail
+    });
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (e) {
     console.error('POST contact', e);
